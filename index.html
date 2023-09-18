@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>G2M - NxtFi Blockchain DEMO</title>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  </head>
+    <body>
+        <div class="container py-3">
+            <header>
+              <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
+                <a href="/" class="d-flex align-items-center link-body-emphasis text-decoration-none">
+                    <img src="https://www.g2mgroup.ar/assets/img/Logo.png" style="width:100px;height:50px;"/>
+                    <span class="fs-4">Demo Verificador de Imágenes</span>
+                </a>
+          
+                <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
+                  <a target="_blank" class="me-3 py-2 link-body-emphasis text-decoration-none" href="https://www.g2mgroup.ar/">G2M</a>
+                  <a target="_blank" class="me-3 py-2 link-body-emphasis text-decoration-none" href="http://nxtfi.org">Blockchain</a>
+                  <a target="_blank" class="py-2 link-body-emphasis text-decoration-none" href="https://docs.nxtfi.org">Documentación</a>
+                </nav>
+              </div>
+          
+              <div class="pricing-header p-3 pb-md-4 mx-auto">
+                <p class="fs-5 text-body-secondary">1er paso: suba una imagen <b>.TIC</b><br>2do paso: genere el hash y la firma de la imagen<br>3er paso: consulta el registro con la blockchain</p>
+              </div>
+            </header>
+          
+            <main>
+              <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+                <div class="col">
+                  <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                      <h4 class="my-0 fw-normal">Subir la Imagen</h4>
+                    </div>
+                    <div class="card-body">
+                      <div>
+                        <label for="formFileLg" class="form-label">Suba un archivo .TIC</label>
+                        <input class="form-control form-control-lg" id="formFileLg" type="file" onchange="return validateFile()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                      <h4 class="my-0 fw-normal">Generar Firma Localmente</h4>
+                    </div>
+                    <div class="card-body" class="py-box">
+                        <div class="mb-3">
+                          <label for="privateKey" class="form-label">Ingrese su Llave Privada <i style="color: green;" class="bi bi-file-lock"></i></label>
+                          <input class="form-control form-control-lg" id="privateKey" onchange="return savePK()"></input>
+                        </div>
+                        <div id="hash-result" style="display: none;">
+                          <span class="form-label">Hash Generado:</span>
+                          <code id="hash"></code>
+                          <hr>
+                          <span class="form-label">Firma Generada:</span>
+                          <code id="signature"></code>
+                          <hr>
+                        </div>
+                      <button id="signature-btn" disabled class="py-button w-100 btn btn-lg btn-primary" onclick="return validatePrivateKey();" type="button">Generar Hash y Firma</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card mb-4 rounded-3 shadow-sm border-primary">
+                    <div class="card-header py-3 text-bg-primary border-primary">
+                      <h4 class="my-0 fw-normal">Verificación en la Blockchain</h4>
+                    </div>
+                    <div class="card-body">
+                      <div id="verification-block" style="display: none;">
+                        <div id="verification-result" style="display: none;">
+                          <i id="vsuccess" class="bi bi-check-circle" style="color: green; font-size: 3rem; display: none;"></i>
+                          <i id="vfailed" class="bi bi-x-circle" style="color: orange; font-size: 3rem; display: none;"></i>
+                          <h4 id="vtext" class="my-0 fw-normal">Verificación Exitosa/Rechazada</h4>
+                        </div>
+                        <hr>
+                        <span class="form-label">Consulta de la blockchain:</span>
+                        <a target="_blank" id="blockchain_link" href="#">Enlace</a>
+                        <hr>
+                        <button id="validate-btn" type="button" disabled onclick="return fetchBlockchain();" class="w-100 btn btn-lg btn-primary">Verificar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          
+            <footer class="pt-4 my-md-5 pt-md-5 border-top">
+              <div class="row text-center">
+                <div class="col-12 col-md">
+                  <img class="mb-2" src="https://www.g2mgroup.ar/assets/img/Logo.png" alt="" width="50" height="25">
+                  <small class="d-block mb-3 text-body-secondary">© 2023</small>
+                </div>
+              </div>
+            </footer>
+          </div>
+    </body>
+    <script src="./hash.js"></script>
+    <script>
+      let node = "https://censo202-001-node.cloud.nxtfi.org/v2";
+      let hash = "";
+      let signature = "";
+      let private_key = "";
+      if(localStorage.getItem('private_key')){
+        private_key = localStorage.getItem('private_key');
+        document.getElementById('privateKey').value = private_key;
+      }
+
+      function savePK(){
+        var privateKey = document.getElementById('privateKey');
+        localStorage.setItem("private_key", privateKey.value)
+      }
+
+      function resetFilds(){
+        document.getElementById('verification-result').style.display = "none";
+        document.getElementById('signature-btn').disabled = true;
+        document.getElementById('validate-btn').disabled = true;
+        document.getElementById('hash-result').style.display = "none";
+        document.getElementById('verification-block').style.display = "none";
+      }
+
+      async function fetchBlockchain(){
+        document.getElementById('validate-btn').innerHTML = '<span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span> <span role="status">Consultando...</span>';
+        var res = await fetch(`${node}/_storage/censo__data/hash/${hash}`)
+        .then((result) => {
+          return result.json();
+        });
+        if(res.error){
+          document.getElementById('vfailed').style.display = "block";
+          document.getElementById('vsuccess').style.display = "none";
+          document.getElementById('vtext').innerHTML = "Verificación Rechazada";
+        }
+        else{
+          document.getElementById('vfailed').style.display = "block";
+          document.getElementById('vsuccess').style.display = "none";
+          document.getElementById('vtext').innerHTML = "Verificación Exitosa";
+        }
+        document.getElementById('validate-btn').innerHTML = "Verificar";
+        document.getElementById('verification-result').style.display = "block";
+      }
+
+      async function validatePrivateKey(){
+        var privateKey = document.getElementById('privateKey');
+        if(trimfield(privateKey.value) == '') 
+        {      
+          console.log("Please Provide Details!");
+          privateKey.focus();
+          return false;       
+        }
+        else
+        {
+          signature = await singHash(private_key, hash);
+          document.getElementById('signature').innerHTML = signature;
+          showSignature();
+          activateValidator();
+          return true;
+        }
+      }
+
+      function trimfield(str) 
+      { 
+        return str.replace(/^\s+|\s+$/g,''); 
+      }
+
+      async function validateFile(){
+        var fileInput = document.getElementById('formFileLg');
+        var filePath = fileInput.value;
+        var allowedExtensions = /(.jpg|.jpeg|.png|.tic)$/i;
+        if(!allowedExtensions.exec(filePath)){
+          alert('Please upload file having extensions .jpeg/.jpg/.png/.gif only.');
+          fileInput.value = '';
+          return false;
+        }else{
+          //Image preview
+          if (fileInput.files && fileInput.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              resetFilds();
+              activateSignature();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+            hash = await hashFile(fileInput.files[0]);
+            document.getElementById('hash').innerHTML = hash;
+            document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hash}`
+            console.log(hash);
+          }
+        }
+      }
+
+      function activateSignature(){
+        document.getElementById('signature-btn').disabled = false;
+      }
+
+      function showSignature(){
+        document.getElementById('hash-result').style.display = "block";
+      }
+
+      function activateValidator(){
+        document.getElementById('verification-block').style.display = "block";
+        document.getElementById('validate-btn').disabled = false;
+      }
+
+      </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</html>
