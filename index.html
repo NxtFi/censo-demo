@@ -131,15 +131,15 @@
         .then((result) => {
           return result.json();
         });
-        if(res.error){
-          document.getElementById('vfailed').style.display = "block";
-          document.getElementById('vsuccess').style.display = "none";
-          document.getElementById('vtext').innerHTML = "Verificación Rechazada";
-        }
-        else{
-          document.getElementById('vfailed').style.display = "block";
-          document.getElementById('vsuccess').style.display = "none";
+        if(res.hash && res.hash == hash) {
+          document.getElementById('vsuccess').style.display = "block";
+          document.getElementById('vfailed').style.display = "none";
           document.getElementById('vtext').innerHTML = "Verificación Exitosa";
+        }
+        else if(res.error) {
+          document.getElementById('vsuccess').style.display = "none";
+          document.getElementById('vfailed').style.display = "block";
+          document.getElementById('vtext').innerHTML = "Verificación Rechazada";
         }
         document.getElementById('validate-btn').innerHTML = "Verificar";
         document.getElementById('verification-result').style.display = "block";
@@ -171,9 +171,9 @@
       async function validateFile(){
         var fileInput = document.getElementById('formFileLg');
         var filePath = fileInput.value;
-        var allowedExtensions = /(.jpg|.jpeg|.png|.tic)$/i;
+        var allowedExtensions = /(.tic)$/i;
         if(!allowedExtensions.exec(filePath)){
-          alert('Please upload file having extensions .jpeg/.jpg/.png/.gif only.');
+          alert('Solo se permiten archivos .tic');
           fileInput.value = '';
           return false;
         }else{
