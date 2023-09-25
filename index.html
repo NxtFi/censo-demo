@@ -63,7 +63,7 @@
                           <code id="signature"></code>
                           <hr>
                         </div>
-                      <button id="signature-btn" disabled class="py-button w-100 btn btn-lg btn-primary" onclick="return validatePrivateKey();" type="button">Generar Hash y Firma</button>
+                      <button id="signature-btn" disabled class="py-button w-100 btn btn-lg btn-primary" type="button">Generar Hash y Firma</button>
                     </div>
                   </div>
                 </div>
@@ -145,11 +145,11 @@
         document.getElementById('verification-result').style.display = "block";
       }
 
-      async function validatePrivateKey(){
+      document.getElementById("signature-btn").onclick = async() => {
         var privateKey = document.getElementById('privateKey');
         if(trimfield(privateKey.value) == '') 
         {      
-          console.log("Please Provide Details!");
+          console.log("Carga la llave privada");
           privateKey.focus();      
         }
         else
@@ -159,7 +159,7 @@
           showSignature();
           activateValidator();
         }
-      }
+      };
 
       function trimfield(str) 
       { 
