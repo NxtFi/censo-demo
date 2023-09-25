@@ -71,6 +71,10 @@ function base64ToArrayBuffer(b64) {
   return byteArray;
 }
 
+function atob(str) {
+  return Buffer.from(str, "base64").toString("binary");
+}
+
 function removeLines(str) {
   return str.replaceAll('\\n', '');
 }

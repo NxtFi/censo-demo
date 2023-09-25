@@ -150,8 +150,7 @@
         if(trimfield(privateKey.value) == '') 
         {      
           console.log("Please Provide Details!");
-          privateKey.focus();
-          //return false;       
+          privateKey.focus();      
         }
         else
         {
@@ -159,7 +158,6 @@
           document.getElementById('signature').innerHTML = signature;
           showSignature();
           activateValidator();
-          //return true;
         }
       }
 
