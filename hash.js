@@ -22,23 +22,36 @@ function buf2hex(buffer) {
 
 async function singHash(privkey, hash) 
 {
-  let privateKey = await getPrivKey(privkey);
-  console.log("privatekey::", privateKey);
-  const encoder = new TextEncoder();
-  let signature0 = await window.crypto.subtle.sign(
-    {
-      name: "RSASSA-PKCS1-v1_5"
-    },
-    privateKey,
-    encoder.encode(hash)
-  );
+  let privateKey = await getPrivKey(privkey)
+  .then(async function (privateKey) {
+    console.log("privatekey::", privateKey);
+    const encoder = new TextEncoder();
+    let signature0 = await window.crypto.subtle.sign(
+      {
+        name: "RSASSA-PKCS1-v1_5"
+      },
+      privateKey,
+      encoder.encode(hash)
+    )
+    .catch(async function (err) {
+      console.log("Error interno firmando");
+      const error = await err
+      console.log(error)
+    });
   
-  var signature1 = await base64Arraybuffer(
-    new Uint8Array(signature0).buffer
-  );
-
-  console.log(signature1);    
-  return signature1;
+    var signature1 = await base64Arraybuffer(
+      new Uint8Array(signature0).buffer
+    );
+  
+    console.log(signature1);    
+    return signature1;
+  })
+  .catch(async function (err) {
+    console.log("Error firmando");
+    const error = await err
+    console.log(error)
+  }); 
+  return privateKey;
 }
 
 async function getPrivKey(rawPK) {
@@ -47,18 +60,26 @@ async function getPrivKey(rawPK) {
     pemToArrayBufferPrivate(rawPK),
     {
       name: "RSASSA-PKCS1-v1_5",
-      hash: { name: "SHA-512" },
+      hash: { name: "SHA-512" }
     },
     false,
     ["sign"]
-  );
+  )
+  .then(async function (ik) {
+    return ik;
+  })
+  .catch(async function (err) {
+    console.log("Error importando la llave");
+    const error = await err
+    console.log(error)
+  });
   return importedPrivKey;
 }
 
 function pemToArrayBufferPrivate(pem) {
   var b64Lines = removeLines(pem);
   var b64Prefix = b64Lines.replace('-----BEGIN RSA PRIVATE KEY-----', '');
-  var b64Final = b64Prefix.replace('-----END RSA PRIVATE KEY-----', '');
+  var b64Final = b64Prefix.replace('-----END RSA PRIVATE KEY-----', '');
   return base64ToArrayBuffer(b64Final);
 }    
 
@@ -72,7 +93,7 @@ function base64ToArrayBuffer(b64) {
 }
 
 function removeLines(str) {
-  return str.replaceAll('\\n', '');
+  return str.replace(/(\r\n|\n|\r)/gm, "");
 }
 
 const base64Arraybuffer = async (data) => {

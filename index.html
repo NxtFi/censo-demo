@@ -154,10 +154,17 @@
         }
         else
         {
-          signature = await singHash(private_key, hash);
-          document.getElementById('signature').innerHTML = signature;
-          showSignature();
-          activateValidator();
+          await singHash(private_key, hash)
+          .then(function (signature) {
+            document.getElementById('signature').innerHTML = signature;
+            document.getElementById('hash-result').style.display = "block";
+            document.getElementById('verification-block').style.display = "block";
+            document.getElementById('validate-btn').disabled = false;
+          })
+          .catch(async function (err) {
+            const error = await err
+            console.log(error)
+          });
         }
       };
 
@@ -180,7 +187,7 @@
             var reader = new FileReader();
             reader.onload = function(e) {
               resetFilds();
-              activateSignature();
+              document.getElementById('signature-btn').disabled = false;
             };
             reader.readAsDataURL(fileInput.files[0]);
             hash = await hashFile(fileInput.files[0]);
@@ -189,19 +196,6 @@
             console.log(hash);
           }
         }
-      }
-
-      function activateSignature(){
-        document.getElementById('signature-btn').disabled = false;
-      }
-
-      function showSignature(){
-        document.getElementById('hash-result').style.display = "block";
-      }
-
-      function activateValidator(){
-        document.getElementById('verification-block').style.display = "block";
-        document.getElementById('validate-btn').disabled = false;
       }
 
       </script>
