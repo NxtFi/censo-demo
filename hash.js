@@ -33,7 +33,7 @@ async function singHash(privkey, hash)
     encoder.encode(hash)
   );
   
-  signature1 = await base64Arraybuffer(
+  var signature1 = await base64Arraybuffer(
     new Uint8Array(signature0).buffer
   );
 
@@ -63,16 +63,12 @@ function pemToArrayBufferPrivate(pem) {
 }    
 
 function base64ToArrayBuffer(b64) {
-  var byteString = atob(b64);
+  var byteString = atob(decodeURIComponent(b64));
   var byteArray = new Uint8Array(byteString.length);
   for (var i = 0; i < byteString.length; i++) {
     byteArray[i] = byteString.charCodeAt(i);
   }
   return byteArray;
-}
-
-function atob(str) {
-  return Buffer.from(str, "base64").toString("binary");
 }
 
 function removeLines(str) {
