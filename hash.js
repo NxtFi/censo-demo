@@ -79,7 +79,7 @@ async function getPrivKey(rawPK) {
 function pemToArrayBufferPrivate(pem) {
   var b64Lines = removeLines(pem);
   var b64Prefix = b64Lines.replace('-----BEGIN RSA PRIVATE KEY-----', '');
-  var b64Final = b64Prefix.replace('-----END RSA PRIVATE KEY-----', '');
+  var b64Final = b64Prefix.replace('-----END RSA PRIVATE KEY-----', '');
   return base64ToArrayBuffer(b64Final);
 }    
 
