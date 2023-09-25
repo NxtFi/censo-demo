@@ -23,6 +23,7 @@ function buf2hex(buffer) {
 async function singHash(privkey, hash) 
 {
   let privateKey = await getPrivKey(privkey);
+  console.log("privatekey::", privateKey);
   const encoder = new TextEncoder();
   let signature0 = await window.crypto.subtle.sign(
     {
@@ -52,7 +53,7 @@ async function getPrivKey(rawPK) {
     ["sign"]
   );
   return importedPrivKey;
-}    
+}
 
 function pemToArrayBufferPrivate(pem) {
   var b64Lines = removeLines(pem);
