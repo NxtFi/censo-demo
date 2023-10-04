@@ -154,7 +154,7 @@
         }
         else
         {
-          await singHash(private_key, hash)
+          await singHash(privateKey.value, hash)
           .then(function (signature) {
             document.getElementById('signature').innerHTML = signature;
             document.getElementById('hash-result').style.display = "block";
