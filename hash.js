@@ -28,7 +28,7 @@ async function singHash(privkey, hash)
     const encoder = new TextEncoder();
     let signature0 = await window.crypto.subtle.sign(
       {
-        name: "RSASSA-PKCS1-v1_5"
+        name: "RSA-PSS"
       },
       privateKey,
       encoder.encode(hash)
