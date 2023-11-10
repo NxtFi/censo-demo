@@ -42,6 +42,11 @@
                         <label for="formFileLg" class="form-label">Suba un archivo .TIC</label>
                         <input class="form-control form-control-lg" id="formFileLg" type="file" onchange="return validateFile()">
                       </div>
+                      <hr>
+                      <div id="hashlabel" style="display: none;">
+                        <span class="form-label">Hash Generado:</span>
+                        <code id="hash"></code>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -51,19 +56,15 @@
                       <h4 class="my-0 fw-normal">Generar Firma Localmente</h4>
                     </div>
                     <div class="card-body" class="py-box">
-                        <div class="mb-3">
-                          <label for="privateKey" class="form-label">Ingrese su Llave Privada <i style="color: green;" class="bi bi-file-lock"></i></label>
-                          <input class="form-control form-control-lg" id="privateKey" onchange="return savePK()"></input>
-                        </div>
                         <div id="hash-result" style="display: none;">
-                          <span class="form-label">Hash Generado:</span>
-                          <code id="hash"></code>
+                          <p class="form-label">Ejecute el siguiente comando localmente (Modifique [PrivateKey] con la ubicación de su llave privada):</p>
+                          <code>python3 sign.py <span id="hash2"></span> PrivateKey</code>
                           <hr>
-                          <span class="form-label">Firma Generada:</span>
-                          <code id="signature"></code>
+                          <span class="form-label">Ingrese la Firma Generada:</span>
+                          <input class="form-control form-control-lg" id="signature" onchange="return saveSignature()" autocomplete="off"~></input>
                           <hr>
                         </div>
-                      <button id="signature-btn" disabled class="py-button w-100 btn btn-lg btn-primary" type="button">Generar Hash y Firma</button>
+                        <button id="validate-btn" type="button" disabled class="w-100 btn btn-lg btn-primary">Verificar</button>
                     </div>
                   </div>
                 </div>
@@ -78,12 +79,11 @@
                           <i id="vsuccess" class="bi bi-check-circle" style="color: green; font-size: 3rem; display: none;"></i>
                           <i id="vfailed" class="bi bi-x-circle" style="color: orange; font-size: 3rem; display: none;"></i>
                           <h4 id="vtext" class="my-0 fw-normal">Verificación Exitosa/Rechazada</h4>
+                          <p id="mtext">Motivo</p>
                         </div>
                         <hr>
                         <span class="form-label">Consulta de la blockchain:</span>
                         <a target="_blank" id="blockchain_link" href="#">Enlace</a>
-                        <hr>
-                        <button id="validate-btn" type="button" disabled onclick="return fetchBlockchain();" class="w-100 btn btn-lg btn-primary">Verificar</button>
                       </div>
                     </div>
                   </div>
@@ -101,72 +101,77 @@
             </footer>
           </div>
     </body>
-    <script src="./hash.js"></script>
     <script>
       let node = "https://censo202-001-node.cloud.nxtfi.org/v2";
       let hash = "";
       let signature = "";
-      let private_key = "";
-      if(localStorage.getItem('private_key')){
-        private_key = localStorage.getItem('private_key');
-        document.getElementById('privateKey').value = private_key;
-      }
-
-      function savePK(){
-        var privateKey = document.getElementById('privateKey');
-        localStorage.setItem("private_key", privateKey.value)
-      }
 
       function resetFilds(){
         document.getElementById('verification-result').style.display = "none";
-        document.getElementById('signature-btn').disabled = true;
         document.getElementById('validate-btn').disabled = true;
-        document.getElementById('hash-result').style.display = "none";
+        //document.getElementById('hash-result').style.display = "none";
         document.getElementById('verification-block').style.display = "none";
       }
+
+      function saveSignature(){
+        var signature = document.getElementById('signature');
+        localStorage.setItem("private_key", signature.value)
+      }
+
+      document.getElementById("validate-btn").onclick = async() => {
+        /*var signatureInput = document.getElementById('signature');
+        if(trimfield(signatureInput.value) == '') 
+        {      
+          console.log("Carga la llave privada");
+          signatureInput.focus();      
+        }
+        else
+        {
+          fetchBlockchain()
+        }*/
+        fetchBlockchain()
+      };
 
       async function fetchBlockchain(){
         document.getElementById('validate-btn').innerHTML = '<span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span> <span role="status">Consultando...</span>';
         var res = await fetch(`${node}/_storage/censo__data/hash/${hash}`)
         .then((result) => {
           return result.json();
-        });
-        if(res.hash && res.hash == hash) {
-          document.getElementById('vsuccess').style.display = "block";
-          document.getElementById('vfailed').style.display = "none";
-          document.getElementById('vtext').innerHTML = "Verificación Exitosa";
+        })
+
+        console.log("result", res);
+        if(res.hash && res.hash == hash) 
+        {
+          if(res.signature && res.signature == signature){
+            document.getElementById('vsuccess').style.display = "block";
+            document.getElementById('vfailed').style.display = "none";
+            document.getElementById('vtext').innerHTML = "Verificación Exitosa";
+          }else{
+            document.getElementById('vsuccess').style.display = "none";
+            document.getElementById('vfailed').style.display = "block";
+            document.getElementById('vtext').innerHTML = "Verificación Rechazada";
+            document.getElementById('mtext').innerHTML = "Hash válido pero la firma no coincide";
+          }
         }
-        else if(res.error) {
+        else if(res.error && res.error == "notFound") 
+        {
+          console.log("not found");
           document.getElementById('vsuccess').style.display = "none";
           document.getElementById('vfailed').style.display = "block";
           document.getElementById('vtext').innerHTML = "Verificación Rechazada";
+          document.getElementById('mtext').innerHTML = "Hash no encontrado";
+        }else{
+          console.log("error found");
+          document.getElementById('vsuccess').style.display = "none";
+          document.getElementById('vfailed').style.display = "block";
+          document.getElementById('vtext').innerHTML = "Verificación Rechazada";
+          document.getElementById('mtext').innerHTML = "Error";
+
         }
         document.getElementById('validate-btn').innerHTML = "Verificar";
         document.getElementById('verification-result').style.display = "block";
+        document.getElementById('verification-block').style.display = "block";
       }
-
-      document.getElementById("signature-btn").onclick = async() => {
-        var privateKey = document.getElementById('privateKey');
-        if(trimfield(privateKey.value) == '') 
-        {      
-          console.log("Carga la llave privada");
-          privateKey.focus();      
-        }
-        else
-        {
-          await singHash(privateKey.value, hash)
-          .then(function (signature) {
-            document.getElementById('signature').innerHTML = signature;
-            document.getElementById('hash-result').style.display = "block";
-            document.getElementById('verification-block').style.display = "block";
-            document.getElementById('validate-btn').disabled = false;
-          })
-          .catch(async function (err) {
-            const error = await err
-            console.log(error)
-          });
-        }
-      };
 
       function trimfield(str) 
       { 
@@ -184,20 +189,28 @@
         }else{
           //Image preview
           if (fileInput.files && fileInput.files[0]) {
+            var file = fileInput.files[0];
             var reader = new FileReader();
-            reader.onload = function(e) {
-              resetFilds();
-              document.getElementById('signature-btn').disabled = false;
+            reader.onload = async function (event) {
+              var fileBuffer = event.target.result;
+              const hashBuffer = await crypto.subtle.digest("SHA-512", fileBuffer);
+              const hashArray = Array.from(new Uint8Array(hashBuffer));
+              const hashHex = hashArray
+                .map((byte) => byte.toString(16).padStart(2, "0"))
+                .join("");
+              console.log('Hash: ' + hashHex);
+              document.getElementById('hash').innerHTML = hashHex;
+              document.getElementById('hash2').innerHTML = hashHex;
+              document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hashHex}`
+              document.getElementById('hashlabel').style.display = "block";
+              document.getElementById('hash-result').style.display = "block";
+              document.getElementById('verification-block').style.display = "block";
+              document.getElementById('validate-btn').disabled = false;
             };
-            reader.readAsDataURL(fileInput.files[0]);
-            hash = await hashFile(fileInput.files[0]);
-            document.getElementById('hash').innerHTML = hash;
-            document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hash}`
-            console.log(hash);
+            reader.readAsArrayBuffer(file);
           }
         }
       }
-
       </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </html>
