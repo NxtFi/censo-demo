@@ -26,7 +26,9 @@
               </div>
           
               <div class="pricing-header p-3 pb-md-4 mx-auto">
-                <p class="fs-5 text-body-secondary">1er paso: suba una imagen <b>.TIC</b><br>2do paso: genere el hash y la firma de la imagen<br>3er paso: consulta el registro con la blockchain</p>
+                <p class="fs-5 text-body-secondary"><b>1er paso:</b> Suba una imagen <b>.TIC</b> o escriba un hash
+                  <br><b>2do paso:</b> Copie y pegue en una terminal el comando generado para obtener la firma de la imagen localmente
+                  <br><b>3er paso:</b> Consulta el registro con la blockchain para verificar</p>
               </div>
             </header>
           
@@ -41,6 +43,9 @@
                       <div>
                         <label for="formFileLg" class="form-label">Suba un archivo .TIC</label>
                         <input class="form-control form-control-lg" id="formFileLg" type="file" onchange="return validateFile()">
+                        <p>o</p>
+                        <p>Escriba el hash para consultar</p>
+                        <input class="form-control form-control-lg" id="hash-input" onchange="return changeHash()" autocomplete="off"~></input>
                       </div>
                       <hr>
                       <div id="hashlabel" style="display: none;">
@@ -57,8 +62,9 @@
                     </div>
                     <div class="card-body" class="py-box">
                         <div id="hash-result" style="display: none;">
-                          <p class="form-label">Ejecute el siguiente comando localmente (Modifique [PrivateKey] con la ubicación de su llave privada):</p>
-                          <code>python3 sign.py <span id="hash2"></span> PrivateKey</code>
+                          <p class="form-label">Ejecute el siguiente comando localmente </p>
+                          <code>python3 sign.py <span id="hash2"></span> ~/privatekey.key</code>
+                          <p style="margin-top: 12px;">Modifique '~/privatekey.key' con la ubicación de su llave privada:</p>
                           <hr>
                           <span class="form-label">Ingrese la Firma Generada:</span>
                           <input class="form-control form-control-lg" id="signature" onchange="return saveSignature()" autocomplete="off"~></input>
@@ -195,13 +201,13 @@
               var fileBuffer = event.target.result;
               const hashBuffer = await crypto.subtle.digest("SHA-512", fileBuffer);
               const hashArray = Array.from(new Uint8Array(hashBuffer));
-              const hashHex = hashArray
+              hash = hashArray
                 .map((byte) => byte.toString(16).padStart(2, "0"))
                 .join("");
-              console.log('Hash: ' + hashHex);
-              document.getElementById('hash').innerHTML = hashHex;
-              document.getElementById('hash2').innerHTML = hashHex;
-              document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hashHex}`
+              console.log('Hash: ' + hash);
+              document.getElementById('hash').innerHTML = hash;
+              document.getElementById('hash2').innerHTML = hash;
+              document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hash}`
               document.getElementById('hashlabel').style.display = "block";
               document.getElementById('hash-result').style.display = "block";
               document.getElementById('verification-block').style.display = "block";
@@ -209,6 +215,27 @@
             };
             reader.readAsArrayBuffer(file);
           }
+        }
+      }
+
+      async function changeHash(){
+        var hashvalue = document.getElementById('hash-input').value;
+        console.log(hashvalue);
+        if(hashvalue != "")
+        {
+          const hash = hashvalue;
+          console.log('Hash: ' + hash);
+          document.getElementById('hash').innerHTML = hash;
+          document.getElementById('hash2').innerHTML = hash;
+          document.getElementById('blockchain_link').href = `${node}/_storage/censo__data/hash/${hash}`
+          document.getElementById('hashlabel').style.display = "block";
+          document.getElementById('hash-result').style.display = "block";
+          document.getElementById('verification-block').style.display = "block";
+          document.getElementById('validate-btn').disabled = false;
+        }
+        else
+        {
+          resetFilds();
         }
       }
       </script>
