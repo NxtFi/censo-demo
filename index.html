@@ -120,8 +120,7 @@
       }
 
       function saveSignature(){
-        var signature = document.getElementById('signature');
-        localStorage.setItem("private_key", signature.value)
+        signature = document.getElementById('signature').value;
       }
 
       document.getElementById("validate-btn").onclick = async() => {
